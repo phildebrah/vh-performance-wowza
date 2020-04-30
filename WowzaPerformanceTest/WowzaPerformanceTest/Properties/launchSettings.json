@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WowzaPerformanceTest": {
+      "commandName": "Project",
+      "commandLineArgs": "publish -si 31 -c 20"
+    }
+  }
+}
