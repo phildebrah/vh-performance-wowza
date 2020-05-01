@@ -30,12 +30,17 @@ namespace WowzaPerformanceTest
             {
                 FileName = fileName,
                 Arguments = arguments,
-                RedirectStandardOutput = true,
-                //RedirectStandardError = true,
-                //RedirectStandardInput = true,
-                //CreateNoWindow = true,
-                //UseShellExecute = false
+                RedirectStandardOutput = true
+                
             };
+
+            if(wowzaConfig.LogOutputToFile)
+            {
+                processStartInfo.RedirectStandardError = true;
+                processStartInfo.RedirectStandardInput = true;
+                processStartInfo.CreateNoWindow = true;
+                processStartInfo.UseShellExecute = false;
+            }
 
             if (!string.IsNullOrEmpty(workingDirectory)) processStartInfo.WorkingDirectory = workingDirectory;
 
@@ -49,30 +54,33 @@ namespace WowzaPerformanceTest
             StringBuilder error = new StringBuilder();
             try
             {
-                //var process = Process.Start(processStartInfo);
                 var process = new Process
                 {
                     StartInfo = processStartInfo,
                     EnableRaisingEvents = true
                 };
 
-                //process.OutputDataReceived += (s, e) =>
-                //{
-                //    lock (output)
-                //    {
-                //        output.AppendLine(e.Data);
-                //    };
-                //};
-                //process.ErrorDataReceived += (s, e) =>
-                //{
-                //    lock (error)
-                //    {
-                //        error.AppendLine(e.Data);
-                //    };
-                //};
+                if (wowzaConfig.LogOutputToFile)
+                {
+                    process.OutputDataReceived += (s, e) =>
+                    {
+                        lock (output)
+                        {
+                            output.AppendLine(e.Data);
+                        };
+                    };
+                    process.ErrorDataReceived += (s, e) =>
+                    {
+                        lock (error)
+                        {
+                            error.AppendLine(e.Data);
+                        };
+                    };
+                }
+
                 process.Exited += (sender, args) =>
                 {
-                    //Helper.WriteToFile($"ConsoleLog-{streamName}", output.ToString() + error.ToString());
+                    if (wowzaConfig.LogOutputToFile)  Helper.WriteToFile($"ConsoleLog-{streamName}", output.ToString() + error.ToString());
                     wowzaApi.GetMonitoringAsync($"MonitoringReport-{streamName}");
                     Thread.Sleep(1000);
                     tcs.SetResult(process.ExitCode);
@@ -80,9 +88,13 @@ namespace WowzaPerformanceTest
                 };
 
                 process.Start();
-                //process.BeginOutputReadLine();
-                //process.BeginErrorReadLine();
-                //process.StandardInput.AutoFlush = true;
+
+                if (wowzaConfig.LogOutputToFile)
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.StandardInput.AutoFlush = true;
+                }
 
             }
             catch (Exception e)

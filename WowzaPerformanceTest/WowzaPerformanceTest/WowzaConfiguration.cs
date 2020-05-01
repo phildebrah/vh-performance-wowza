@@ -20,7 +20,7 @@ namespace WowzaPerformanceTest
         public string WorkingDirectory { get; set; }
         public string StreamName { get; set; }
         public string ApplicationName { get; set; }
-
         public int PollMonitoringInterval { get; set; }
+        public bool LogOutputToFile { get; set; }
     }
 }
