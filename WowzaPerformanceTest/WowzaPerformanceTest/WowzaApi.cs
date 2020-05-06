@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -17,9 +15,48 @@ namespace WowzaPerformanceTest
         private WowzaConfiguration wowzaConfig;
         private HttpClientHandler httpClientHandler;
         private HttpClient httpClient;
-
         private string applicationsUrl;
         private string serverMonitoringUrl = "/v2/machine/monitoring/current";
+
+        private ModuleConfig[] ModulesList => new ModuleConfig[]
+                                        {
+                                            new ModuleConfig
+                                            {
+                                                Name = "base",
+                                                Description = "Base",
+                                                Class = "com.wowza.wms.module.ModuleCore",
+                                                Order = 0
+                                            },
+                                            new ModuleConfig
+                                            {
+                                                Name = "logging",
+                                                Description = "Client Logging",
+                                                Class = "com.wowza.wms.module.ModuleClientLogging",
+                                                Order =1
+                                            },
+                                            new ModuleConfig
+                                            {
+                                                Name = "flvplayback",
+                                                Description = "FLVPlayback12",
+                                                Class = "com.wowza.wms.module.ModuleFLVPlayback",
+                                                Order =2
+                                            },
+                                            new ModuleConfig
+                                            {
+                                                Name = "ModuleCoreSecurity",
+                                                Description = "Core Security Module for Applications",
+                                                Class = "com.wowza.wms.module.ModuleCoreSecurity",
+                                                Order =3
+                                            },
+                                            new ModuleConfig
+                                            {
+                                                Name = "ModuleMediaWriterFileMover",
+                                                Description = "ModuleMediaWriterFileMover",
+                                                Class = "com.wowza.wms.module.ModuleMediaWriterFileMover",
+                                                Order =3
+                                            }
+                                        };
+
         public WowzaApi(WowzaConfiguration wowzaConfiguration)
         {
             wowzaConfig = wowzaConfiguration;
@@ -90,6 +127,10 @@ namespace WowzaPerformanceTest
                     StorageDir = wowzaConfig.StorageDirectory,
                     StorageDirExists = false,
                 },
+                Modules = new ModulesConfig
+                {
+                    ModuleList = ModulesList
+                },
                 SecurityConfig = new SecurityConfigRequest
                 {
                     PublishBlockDuplicateStreamNames = true,
@@ -110,15 +151,16 @@ namespace WowzaPerformanceTest
             return response.IsSuccessStatusCode;
         }
 
-        public  async void GetApplicationsAsync()
-        { 
+        public  async void GetApplicationsAsync(string applicationName)
+        {
+            if (!string.IsNullOrEmpty(applicationName)) applicationsUrl += $"/{applicationName}";
+
             var response = await httpClient.GetAsync
             (
-                applicationsUrl
+                applicationsUrl 
             );
 
             var result =  await response.Content.ReadAsStringAsync();
-
             Console.WriteLine(result);            
         }
 
@@ -132,9 +174,7 @@ namespace WowzaPerformanceTest
             var result = await response.Content.ReadAsStringAsync();
 
             Helper.PrintToFile(JsonConvert.DeserializeObject<ServerMonitoring>(result), fileName, wowzaConfig.WowzaServer);
-        }
-          
-
+        }      
 
         private  string SerialiseRequestToCamelCaseJson(object request)
         {
@@ -158,6 +198,7 @@ namespace WowzaPerformanceTest
             public string ClientStreamReadAccess { get; set; }
             public string Description { get; set; }
             public SecurityConfigRequest SecurityConfig { get; set; }
+            public ModulesConfig Modules { get; set; }
         }
 
         private class SecurityConfigRequest
@@ -176,6 +217,19 @@ namespace WowzaPerformanceTest
             public string StreamType { get; set; }
             public string StorageDir { get; set; }
 
+        }
+
+        private class ModulesConfig
+        {
+            public ModuleConfig[] ModuleList { get; set; }
+        }
+
+        private class ModuleConfig
+        {
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public string Class { get; set; }
+            public int Order { get; set; }
         }
 
         private class ServerMonitoring
