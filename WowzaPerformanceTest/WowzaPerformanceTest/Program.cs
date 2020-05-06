@@ -1,9 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -206,7 +203,11 @@ namespace WowzaPerformanceTest
 
             if(!skipCreation)
             {
-                result = await WowzaApi.CreateApplication(applicationName);
+                var tc = WowzaApi.CreateApplication(applicationName);
+                var tu = WowzaApi.UpdateApplication(applicationName);
+
+                Task.WaitAll(tc, tu);
+                result = tu.Result && tc.Result;
             }
 
             if (!skipPublish &&  (result || skipCreation))

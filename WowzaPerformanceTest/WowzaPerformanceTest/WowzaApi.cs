@@ -127,10 +127,6 @@ namespace WowzaPerformanceTest
                     StorageDir = wowzaConfig.StorageDirectory,
                     StorageDirExists = false,
                 },
-                Modules = new ModulesConfig
-                {
-                    ModuleList = ModulesList
-                },
                 SecurityConfig = new SecurityConfigRequest
                 {
                     PublishBlockDuplicateStreamNames = true,
@@ -151,13 +147,69 @@ namespace WowzaPerformanceTest
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<bool> UpdateApplication(string applicationName)
+        {
+            var url = $"{applicationsUrl}/{applicationName}/adv";
+
+            var updateRequest = new ApplicationConfigAdv
+            {                
+                Modules = ModulesList,
+                AdvancedSettings = new AdvancedSetting[] {
+                                new AdvancedSetting
+                                {
+                                    SectionName = "Application",
+                                    Section = "/Root/Application",
+                                    Name = "fileMoverDestinationPath",
+                                    Type = "String",
+                                    Value = "${com.wowza.wms.context.VHostConfigHome}/content/azurecopy",
+                                    Documented = false,
+                                    Enabled = true
+                                },
+                                new AdvancedSetting
+                                {
+                                    SectionName = "Application",
+                                    Section = "/Root/Application",
+                                    Name = "fileMoverDeleteOriginal",
+                                    Type = "Boolean",
+                                    Value = "true",
+                                    Documented = false,
+                                    Enabled = true
+                                },
+                                new AdvancedSetting
+                                {
+                                    SectionName = "Application",
+                                    Section = "/Root/Application",
+                                    Name = "fileMoverVersionFile",
+                                    Type = "Boolean",
+                                    Value = "true",
+                                    Documented = false,
+                                    Enabled = true
+                                }
+                }
+            };  
+
+            Console.WriteLine($"Updating application {applicationName}");
+
+            var response = await httpClient.PostAsync
+              (
+                  url, new StringContent(SerialiseRequestToCamelCaseJson(updateRequest), Encoding.UTF8, wowzaConfig.MediaType)
+              );
+
+            var result = await response.Content.ReadAsStringAsync();
+
+
+            return response.IsSuccessStatusCode;
+        }
+
         public  async void GetApplicationsAsync(string applicationName)
         {
-            if (!string.IsNullOrEmpty(applicationName)) applicationsUrl += $"/{applicationName}";
+            var url = applicationsUrl;
+
+            if (!string.IsNullOrEmpty(applicationName)) url = $"/{applicationName}";
 
             var response = await httpClient.GetAsync
             (
-                applicationsUrl 
+                url 
             );
 
             var result =  await response.Content.ReadAsStringAsync();
@@ -199,6 +251,24 @@ namespace WowzaPerformanceTest
             public string Description { get; set; }
             public SecurityConfigRequest SecurityConfig { get; set; }
             public ModulesConfig Modules { get; set; }
+        }
+
+        private class ApplicationConfigAdv
+        {
+            public AdvancedSetting[] AdvancedSettings { get; set; }
+            public ModuleConfig[] Modules { get; set; }
+        }
+
+        private class AdvancedSetting
+        {
+            public string SectionName { get; set; }
+            public string Section { get; set; }
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public string Value { get; set; }
+            public bool Documented { get; set; }
+            public bool Enabled { get; set; }
+
         }
 
         private class SecurityConfigRequest
