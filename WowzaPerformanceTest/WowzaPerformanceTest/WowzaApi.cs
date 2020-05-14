@@ -86,7 +86,7 @@ namespace WowzaPerformanceTest
 
         public  async Task<bool> DeleteApp(string applicationName)
         {
-
+            
             Console.WriteLine($"Deleting application {applicationName}");
 
             var response = await httpClient.DeleteAsync
@@ -124,7 +124,7 @@ namespace WowzaPerformanceTest
                 {
                     CreateStorageDir = true,
                     StreamType = wowzaConfig.StreamType,
-                    StorageDir = wowzaConfig.StorageDirectory,
+                    StorageDir = $"{wowzaConfig.StorageDirectory}{applicationName}",
                     StorageDirExists = false,
                 },
                 SecurityConfig = new SecurityConfigRequest
@@ -150,6 +150,7 @@ namespace WowzaPerformanceTest
         public async Task<bool> UpdateApplication(string applicationName)
         {
             var url = $"{applicationsUrl}/{applicationName}/adv";
+            var azureStorageDirectory = "${com.wowza.wms.context.VHostConfigHome}/content/azurecopy/";
 
             var updateRequest = new ApplicationConfigAdv
             {                
@@ -161,7 +162,7 @@ namespace WowzaPerformanceTest
                                     Section = "/Root/Application",
                                     Name = "fileMoverDestinationPath",
                                     Type = "String",
-                                    Value = "${com.wowza.wms.context.VHostConfigHome}/content/azurecopy",
+                                    Value = $"{azureStorageDirectory}{applicationName}",
                                     Documented = false,
                                     Enabled = true
                                 },
@@ -258,7 +259,6 @@ namespace WowzaPerformanceTest
             public AdvancedSetting[] AdvancedSettings { get; set; }
             public ModuleConfig[] Modules { get; set; }
         }
-
         private class AdvancedSetting
         {
             public string SectionName { get; set; }
