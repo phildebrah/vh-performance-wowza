@@ -12,6 +12,8 @@ namespace WowzaPerformanceTest
         public string Username { get; set; }
         public string Password { get; set; }
         public string StorageDirectory { get; set; }
+
+        public string AzureStorageDirectory { get; set; }
         public string RestEndpoint { get; set; }
         public string StreamEndpoint { get; set; }
         public string StreamType { get; set; }

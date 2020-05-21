@@ -150,7 +150,7 @@ namespace WowzaPerformanceTest
         public async Task<bool> UpdateApplication(string applicationName)
         {
             var url = $"{applicationsUrl}/{applicationName}/adv";
-            var azureStorageDirectory = "${com.wowza.wms.context.VHostConfigHome}/content/azurecopy/";
+            //var azureStorageDirectory = "${com.wowza.wms.context.VHostConfigHome}/content/azurecopy/";
 
             var updateRequest = new ApplicationConfigAdv
             {                
@@ -162,7 +162,7 @@ namespace WowzaPerformanceTest
                                     Section = "/Root/Application",
                                     Name = "fileMoverDestinationPath",
                                     Type = "String",
-                                    Value = $"{azureStorageDirectory}{applicationName}",
+                                    Value = $"{wowzaConfig.AzureStorageDirectory}{applicationName}",
                                     Documented = false,
                                     Enabled = true
                                 },
