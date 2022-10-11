@@ -167,9 +167,10 @@ namespace WowzaPerformanceTest
 
             for (var i = startCount; i <= (startCount - 1 + count); i++)
             {
-                var appName = $"{appPrefix}{i}";
-                var streamName = appName.Replace(appPrefix, streamPrefix);
-                CreateAndProcessStream(appName, streamName,taskList, skipCreation, skipPublish);
+                //var appName = $"{appPrefix}{i}";
+                //var streamName = appName.Replace(appPrefix, streamPrefix);
+                var streamName = $"{streamPrefix}{i}";
+                CreateAndProcessStream(appPrefix, streamName,taskList, skipCreation, skipPublish);
                 Thread.Sleep(1000);
 
                 var currTime = stopWatch.Elapsed.TotalSeconds;
