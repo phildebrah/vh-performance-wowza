@@ -2,7 +2,7 @@
   "profiles": {
     "WowzaPerformanceTest": {
       "commandName": "Project",
-      "commandLineArgs": "publish -si 10 -c 20"
+      "commandLineArgs": "publish -si 1 -c 1000"
     }
   }
 }
